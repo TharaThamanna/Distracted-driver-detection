@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Distracted Driver Detection</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+            background-image: url('/static/car-crashing.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            backdrop-filter: brightness(0.4); /* dim the image a bit for better text visibility */
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.6); /* semi-transparent for dark mode */
+            color: inherit;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-mode {
+            background-color: #f4f4f4;
+            color: #222;
+        }
+
+        body.dark-mode {
+            background-color: #121212;
+            color: #eee;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color: inherit;
+            color: inherit;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 25px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid currentColor;
+            background-color: inherit;
+            color: inherit;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.05);
+            color: inherit;
+        }
+
+        .uploaded-img {
+            margin-top: 20px;
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .dark-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .dark-toggle:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <button class="dark-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+
+    <div class="container">
+        <h1>Distracted Driver Detection</h1>
+
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required onchange="previewImage(event)"><br>
+            <button type="submit">Detect</button>
+        </form>
+
+        <!-- Display uploaded image after form submission -->
+        <div id="image-preview-container">
+            {% if uploaded_image %}
+                <img src="{{ uploaded_image }}" alt="Uploaded Image" class="uploaded-img">
+            {% endif %}
+        </div>
+
+        <!-- Display the prediction result -->
+        <!-- Display the prediction result -->
+        {% if prediction %}
+        <div class="result-box">
+            <strong>Prediction:</strong> {{ prediction }}<br>
+            <strong>Confidence:</strong> {{ confidence }}%
+
+            {% if prediction != "Safe Driving" %}
+                <div style="margin-top: 15px; padding: 12px; background-color: #ffdddd; color: #a00; border-radius: 8px;">
+                    ⚠️ Warning: Distracted driving detected! Please stay focused.
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+
+    <script>
+        function toggleDarkMode() {
+            const body = document.body;
+            const isDark = body.classList.toggle("dark-mode");
+            body.classList.toggle("light-mode", !isDark);
+
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+
+            document.querySelector(".dark-toggle").textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+        }
+
+        window.onload = () => {
+            const theme = localStorage.getItem("theme");
+            if (theme === "dark") {
+                document.body.classList.add("dark-mode");
+                document.body.classList.remove("light-mode");
+                document.querySelector(".dark-toggle").textContent = "☀️ Light Mode";
+            }
+        };
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function () {
+                const imageContainer = document.getElementById("image-preview-container");
+                imageContainer.innerHTML = `<img src="${reader.result}" alt="Uploaded Image" class="uploaded-img">`;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+    <!-- Warning Sound -->
+<audio id="warning-sound" src="{{ url_for('static', filename='warning.mp3') }}" preload="auto"></audio>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast">⚠️ Distracted Driving Detected!</div>
+
+<style>
+    .toast {
+        visibility: hidden;
+        min-width: 250px;
+        background-color: #f44336;
+        color: white;
+        text-align: center;
+        border-radius: 10px;
+        padding: 16px;
+        position: fixed;
+        z-index: 9999;
+        top: 30px; /* Show at top */
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: bold;
+        font-size: 16px;
+        transition: visibility 0s, opacity 0.5s linear;
+        opacity: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .toast.show {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
+
+<!-- Warning Sound Element -->
+<audio id="warning-sound" src="{{ url_for('static', filename='warning.mp3') }}" preload="auto"></audio>
+<script>
+    function toggleDarkMode() {
+        const body = document.body;
+        const isDark = body.classList.toggle("dark-mode");
+        body.classList.toggle("light-mode", !isDark);
+
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+        document.querySelector(".dark-toggle").textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+    }
+
+    window.onload = () => {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark") {
+            document.body.classList.add("dark-mode");
+            document.body.classList.remove("light-mode");
+            document.querySelector(".dark-toggle").textContent = "☀️ Light Mode";
+        }
+
+        // Handle warning toast + sound if distracted
+        const prediction = "{{ prediction }}";
+        const sound = document.getElementById('warning-sound');
+        if (prediction && prediction !== "Safe Driving") {
+            const toast = document.getElementById("toast");
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 4000);
+
+            // Play sound after short delay to ensure browser allows it
+            setTimeout(() => {
+                sound.volume = 1;
+                sound.play().catch(err => console.log("Sound play blocked:", err));
+            }, 500);
+        }
+    };
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function () {
+            const imageContainer = document.getElementById("image-preview-container");
+            imageContainer.innerHTML = `<img src="${reader.result}" alt="Uploaded Image" class="uploaded-img">`;
+        };
+
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
+
+
+</body>
+</html>

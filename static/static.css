@@ -1,0 +1,78 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f2f6fc;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  
+  .container {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    color: #2c3e50;
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  
+  input[type="file"] {
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px dashed #aaa;
+    border-radius: 8px;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  button {
+    background-color: #3498db;
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #2980b9;
+  }
+  
+  #image-preview {
+    margin-top: 20px;
+  }
+  
+  #image-preview img {
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  #result {
+    margin-top: 30px;
+    font-size: 20px;
+    color: #2c3e50;
+  }
+  
+  .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
